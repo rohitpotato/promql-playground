@@ -2,26 +2,9 @@
 // Connects to the official Prometheus demo server
 
 // In development, Vite proxy handles CORS (/prometheus -> https://demo.promlabs.com)
-// In production, you have several options:
-// 1. Deploy with a backend proxy (recommended)
-// 2. Use Vercel/Netlify serverless functions
-// 3. Self-host Prometheus with CORS headers enabled
-// 4. Use a CORS proxy service (not recommended for production)
+// In production, Vercel serverless function proxies requests
 
 const isDev = import.meta.env.DEV;
-
-// Configuration - modify these for your deployment
-const PROMETHEUS_ENDPOINTS = {
-  // Development: Use Vite proxy
-  development: '/prometheus',
-  // Production: Use Vercel serverless function proxy
-  // If deploying elsewhere, update this to your proxy endpoint
-  production: '/api/prometheus',
-};
-
-const PROMETHEUS_URL = isDev 
-  ? PROMETHEUS_ENDPOINTS.development 
-  : PROMETHEUS_ENDPOINTS.production;
 
 export interface PrometheusQueryResult {
   status: 'success' | 'error';
@@ -58,22 +41,19 @@ export interface TimeRange {
   step?: number; // Step in seconds
 }
 
+// Build URL based on environment
+function buildUrl(apiPath: string, params: URLSearchParams): string {
+  if (isDev) {
+    // Development: Use Vite proxy
+    return `/prometheus${apiPath}?${params}`;
+  } else {
+    // Production: Use Vercel serverless function with path as query param
+    params.set('path', apiPath);
+    return `/api/prometheus?${params}`;
+  }
+}
+
 class PrometheusClient {
-  private baseUrl: string;
-
-  constructor(baseUrl: string = PROMETHEUS_URL) {
-    this.baseUrl = baseUrl;
-  }
-
-  // Change the Prometheus endpoint (useful for custom deployments)
-  setBaseUrl(url: string) {
-    this.baseUrl = url;
-  }
-
-  getBaseUrl(): string {
-    return this.baseUrl;
-  }
-
   // Execute a range query (returns matrix data for graphing)
   async queryRange(query: string, timeRange: TimeRange): Promise<PrometheusQueryResult> {
     const params = new URLSearchParams({
@@ -83,8 +63,10 @@ class PrometheusClient {
       step: (timeRange.step || this.calculateStep(timeRange)).toString(),
     });
 
+    const url = buildUrl('/api/v1/query_range', params);
+
     try {
-      const response = await fetch(`${this.baseUrl}/api/v1/query_range?${params}`);
+      const response = await fetch(url);
       
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -93,15 +75,14 @@ class PrometheusClient {
       const data = await response.json();
       return data;
     } catch (error) {
-      // Provide helpful error messages
       const message = error instanceof Error ? error.message : 'Network error';
       
       if (message.includes('Failed to fetch') || message.includes('NetworkError')) {
         return {
           status: 'error',
           error: isDev 
-            ? `Network error: Check if the dev server proxy is configured correctly.`
-            : `CORS error: The Prometheus server doesn't allow cross-origin requests. You need to set up a proxy server. See the README for deployment options.`,
+            ? `Network error: Check if the dev server is running.`
+            : `Network error: Could not connect to the proxy server.`,
           errorType: 'cors_error',
         };
       }
@@ -121,8 +102,10 @@ class PrometheusClient {
       params.set('time', time.toString());
     }
 
+    const url = buildUrl('/api/v1/query', params);
+
     try {
-      const response = await fetch(`${this.baseUrl}/api/v1/query?${params}`);
+      const response = await fetch(url);
       
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -141,8 +124,11 @@ class PrometheusClient {
 
   // Get all metric names
   async getMetricNames(): Promise<string[]> {
+    const params = new URLSearchParams();
+    const url = buildUrl('/api/v1/label/__name__/values', params);
+
     try {
-      const response = await fetch(`${this.baseUrl}/api/v1/label/__name__/values`);
+      const response = await fetch(url);
       
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
@@ -157,8 +143,11 @@ class PrometheusClient {
 
   // Get all label names
   async getLabelNames(): Promise<string[]> {
+    const params = new URLSearchParams();
+    const url = buildUrl('/api/v1/labels', params);
+
     try {
-      const response = await fetch(`${this.baseUrl}/api/v1/labels`);
+      const response = await fetch(url);
       
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
@@ -173,8 +162,11 @@ class PrometheusClient {
 
   // Get values for a specific label
   async getLabelValues(labelName: string): Promise<string[]> {
+    const params = new URLSearchParams();
+    const url = buildUrl(`/api/v1/label/${encodeURIComponent(labelName)}/values`, params);
+
     try {
-      const response = await fetch(`${this.baseUrl}/api/v1/label/${encodeURIComponent(labelName)}/values`);
+      const response = await fetch(url);
       
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
@@ -195,8 +187,10 @@ class PrometheusClient {
       params.set('end', timeRange.end.toString());
     }
 
+    const url = buildUrl('/api/v1/series', params);
+
     try {
-      const response = await fetch(`${this.baseUrl}/api/v1/series?${params}`);
+      const response = await fetch(url);
       
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
@@ -216,8 +210,10 @@ class PrometheusClient {
       params.set('metric', metric);
     }
 
+    const url = buildUrl('/api/v1/metadata', params);
+
     try {
-      const response = await fetch(`${this.baseUrl}/api/v1/metadata?${params}`);
+      const response = await fetch(url);
       
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
@@ -233,9 +229,7 @@ class PrometheusClient {
   // Calculate appropriate step based on time range
   calculateStep(timeRange: TimeRange): number {
     const duration = timeRange.end - timeRange.start;
-    // Aim for ~250 data points
     const step = Math.max(1, Math.floor(duration / 250));
-    // Round to nice intervals
     if (step < 15) return 15;
     if (step < 30) return 30;
     if (step < 60) return 60;
