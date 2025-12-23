@@ -1,4 +1,4 @@
-# PromQL Playground
+# [PromQL Playground](https://promql-playground.vercel.app/)
 
 An interactive learning environment for Prometheus Query Language (PromQL). Write queries, visualize results, and learn PromQL concepts through hands-on examples.
 
