@@ -1,0 +1,59 @@
+/* App-specific styles */
+
+/* Panel transitions */
+.app-container {
+  transition: background-color 0.2s ease;
+}
+
+/* Smooth scrolling */
+* {
+  scroll-behavior: smooth;
+}
+
+/* Selection styling */
+::selection {
+  background-color: var(--grafana-blue);
+  color: white;
+}
+
+/* Focus outline override for better accessibility */
+:focus-visible {
+  outline: 2px solid var(--grafana-blue);
+  outline-offset: 2px;
+}
+
+/* Button active states */
+button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* Ensure Monaco editor fills its container properly */
+.monaco-editor {
+  border-radius: 4px !important;
+}
+
+/* Custom scrollbar for query input */
+.monaco-scrollable-element > .scrollbar > .slider {
+  background: var(--grafana-border-strong) !important;
+  border-radius: 4px !important;
+}
+
+.monaco-scrollable-element > .scrollbar > .slider:hover {
+  background: var(--grafana-text-tertiary) !important;
+}
+
+/* Animation for panel content */
+@keyframes contentFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.panel-content {
+  animation: contentFadeIn 0.2s ease;
+}
