@@ -9,6 +9,23 @@
     "lint": "eslint .",
     "preview": "vite preview"
   },
+  "keywords": [
+    "prometheus",
+    "promql",
+    "playground",
+    "monitoring",
+    "grafana",
+    "observability",
+    "prometheus-query-language",
+    "prometheus-query-editor",
+    "prometheus-query-visualizer",
+    "prometheus-query-explainer",
+    "prometheus-query-documentation",
+    "prometheus-query-examples",
+    "prometheus-query-tutorials",
+    "prometheus-query-scenarios",
+    "prometheus-query-tests"
+  ],
   "dependencies": {
     "@lezer/common": "^1.4.0",
     "@monaco-editor/react": "^4.7.0",
