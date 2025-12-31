@@ -15,7 +15,7 @@ import type { PrometheusMetricResult } from './services/prometheusClient';
 import type { Scenario } from './types/promql';
 import './styles/grafana-theme.css';
 import './App.css';
-import { Analytics } from "@vercel/analytics/next"
+import { Analytics } from "@vercel/analytics/react"
 
 function App() {
   const [selectedScenario, setSelectedScenario] = useState<Scenario>(scenarios[0]);
