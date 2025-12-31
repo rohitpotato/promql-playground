@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Play, BarChart3, BookOpen, Code2, Lightbulb, Table2, FileText, ChevronLeft, ChevronRight, Globe, AlertCircle } from 'lucide-react';
+import { Play, BarChart3, BookOpen, Code2, Lightbulb, Table2, FileText, ChevronLeft, ChevronRight, Globe, AlertCircle, Github } from 'lucide-react';
 import { ScenarioManager } from './components/ScenarioManager';
 import { QueryInput } from './components/QueryInput';
 import { TimeRangePicker, type TimeRange } from './components/TimeRangePicker';
@@ -118,6 +118,32 @@ function App() {
               }}>
                 Learn by doing
               </span>
+              <a
+                href="https://github.com/rohitpotato/promql-playground"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '4px',
+                  color: 'var(--text-secondary)',
+                  transition: 'all 0.15s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = 'var(--text-primary)';
+                  e.currentTarget.style.background = 'var(--bg-tertiary)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = 'var(--text-secondary)';
+                  e.currentTarget.style.background = 'transparent';
+                }}
+                title="View on GitHub"
+              >
+                <Github size={16} />
+              </a>
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '0 16px' }}>
