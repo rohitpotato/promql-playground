@@ -1,0 +1,91 @@
+{
+  "name": "@promql-playground/react",
+  "version": "0.1.0",
+  "description": "A plug-and-play React SDK for PromQL playground with query visualization, explanation, and scenarios",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./styles.css": "./dist/styles.css"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "sideEffects": [
+    "*.css"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "tsup && pnpm build:css",
+    "build:css": "cat src/styles/grafana-theme.css src/App.css src/index.css > dist/styles.css",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "prometheus",
+    "promql",
+    "playground",
+    "monitoring",
+    "grafana",
+    "observability",
+    "react",
+    "sdk",
+    "prometheus-query-language",
+    "prometheus-query-editor",
+    "prometheus-query-visualizer",
+    "prometheus-query-explainer"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/promql-playground"
+  },
+  "homepage": "https://github.com/yourusername/promql-playground#readme",
+  "bugs": {
+    "url": "https://github.com/yourusername/promql-playground/issues"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "dependencies": {
+    "@monaco-editor/react": "^4.7.0",
+    "@tanstack/react-query": "^5.90.12",
+    "date-fns": "^4.1.0",
+    "lucide-react": "^0.562.0",
+    "monaco-promql": "^1.8.0",
+    "uplot": "^1.6.32"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@types/node": "^24.10.1",
+    "@types/react": "^19.2.5",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.1",
+    "eslint": "^9.39.1",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.4.24",
+    "globals": "^16.5.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "tsup": "^8.0.2",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.46.4",
+    "vite": "^5.4.0"
+  }
+}
+

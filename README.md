@@ -1,40 +1,109 @@
-# [PromQL Playground](https://promql-playground.vercel.app/)
+# PromQL Playground
 
 An interactive learning environment for Prometheus Query Language (PromQL). Write queries, visualize results, and learn PromQL concepts through hands-on examples.
 
 ![PromQL Playground](https://img.shields.io/badge/PromQL-Playground-blue)
+[![npm version](https://img.shields.io/npm/v/@promql-playground/react.svg)](https://www.npmjs.com/package/@promql-playground/react)
 
 ## Features
 
-- **Interactive Query Editor** - Monaco-based editor with syntax highlighting and autocomplete
-- **Real Prometheus Data** - Connects to demo.promlabs.com for real metrics
-- **Visualizations** - Time series graphs with zoom, pan, and series filtering
-- **Learning Scenarios** - Guided tutorials covering PromQL concepts
-- **Query Explanation** - Step-by-step breakdown of query execution
-- **Function Reference** - Documentation for all PromQL functions
+- 📊 **Interactive Query Editor** - Monaco-based editor with syntax highlighting and autocomplete
+- 📈 **Real Prometheus Data** - Connect to any Prometheus server
+- 🎯 **Visualizations** - Time series graphs with zoom, pan, and series filtering
+- 📚 **Learning Scenarios** - Guided tutorials covering PromQL concepts
+- 🔍 **Query Explanation** - Step-by-step breakdown of query execution
+- 📖 **Function Reference** - Documentation for all PromQL functions
+- 🎨 **Customizable** - Support for custom metrics, labels, and examples
 
-## Getting Started
+## Packages
 
-### Prerequisites
+This monorepo contains:
 
-- Node.js 18+
-- npm or yarn
+| Package | Description |
+|---------|-------------|
+| [`@promql-playground/react`](./packages/react) | React SDK - plug-and-play PromQL playground component |
+| [`examples/nextjs-example`](./examples/nextjs-example) | Next.js example app |
 
-### Installation
+## Quick Start
+
+### Using the SDK in your React app
+
+```bash
+npm install @promql-playground/react
+```
+
+```tsx
+'use client';
+
+import dynamic from 'next/dynamic';
+import '@promql-playground/react/styles.css';
+
+// For Next.js, use dynamic import with ssr: false
+const PromQLPlayground = dynamic(
+  () => import('@promql-playground/react').then((mod) => mod.PromQLPlayground),
+  { ssr: false }
+);
+
+export default function App() {
+  return (
+    <PromQLPlayground
+      promUrl="/api/prometheus"
+      defaultMetricName="my_api_request_duration_seconds"
+      defaultIdentifier="app"
+      defaultIdentifierValue="my-service"
+    />
+  );
+}
+```
+
+### Running the example locally
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/promql-playground.git
+git clone https://github.com/rohitpotato/promql-playground.git
 cd promql-playground
 
 # Install dependencies
-npm install
+pnpm install
 
-# Start development server
-npm run dev
+# Build the SDK
+pnpm build
+
+# Run the Next.js example
+cd examples/nextjs-example
+pnpm dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173) in your browser.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## SDK Props
+
+| Prop | Type | Required | Description |
+|------|------|----------|-------------|
+| `promUrl` | `string` | Yes | Prometheus API URL (use a proxy to avoid CORS) |
+| `defaultMetricName` | `string` | No | Default metric name for built-in examples |
+| `defaultIdentifier` | `string` | No | Default label key (e.g., "job", "app") |
+| `defaultIdentifierValue` | `string` | No | Default label value |
+| `labelMappings` | `LabelMappings` | No | Map standard labels to your system's labels |
+| `examples` | `Example[]` | No | Custom examples to add |
+| `hideBuiltInExamples` | `boolean` | No | Hide built-in examples |
+
+### Label Mappings
+
+Different systems use different label names. Use `labelMappings` to adapt built-in examples:
+
+```tsx
+<PromQLPlayground
+  promUrl="/api/prometheus"
+  defaultMetricName="http_server_request_duration_seconds"
+  labelMappings={{
+    status: 'http_status_code',      // OpenTelemetry style
+    method: 'http_method',
+    path: 'http_route',
+    instance: 'service_instance_id',
+  }}
+/>
+```
 
 ## Learning Scenarios
 
@@ -44,119 +113,90 @@ The playground includes guided scenarios to learn PromQL:
 2. **Error Rate Tracking** - Monitor 4xx/5xx errors, calculate SLIs
 3. **HTTP Request Analysis** - Request rates, throughput, grouping
 4. **Latency Analysis** - Histograms, percentiles, p50/p95/p99
-5. **Resource Usage** - CPU, memory, disk monitoring
-6. **Aggregation Deep Dive** - sum, avg, max, min, count
-7. **Top/Bottom Analysis** - topk, bottomk for rankings
-8. **Time Comparisons** - Using offset for historical comparisons
-9. **Rate Windows** - Understanding rate() window sizes
+5. **Aggregation Deep Dive** - sum, avg, max, min, count
+6. **Top/Bottom Analysis** - topk, bottomk for rankings
+7. **Time Comparisons** - Using offset for historical comparisons
+8. **Rate Windows** - Understanding rate() window sizes
 
-## Deployment
+## Setting up a Proxy
 
-### Vercel (Recommended)
+To avoid CORS issues, create an API route that proxies requests to Prometheus:
 
-The project includes a Vercel serverless function to handle CORS:
+### Next.js App Router
 
-```bash
-npm i -g vercel
-vercel
+```ts
+// app/api/prometheus/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+
+const PROMETHEUS_URL = 'https://your-prometheus-server.com';
+
+export async function GET(request: NextRequest) {
+  const searchParams = request.nextUrl.searchParams;
+  const path = searchParams.get('path') || '/api/v1/query';
+
+  const targetUrl = new URL(path, PROMETHEUS_URL);
+  searchParams.forEach((value, key) => {
+    if (key !== 'path') targetUrl.searchParams.append(key, value);
+  });
+
+  const response = await fetch(targetUrl.toString());
+  const data = await response.json();
+  return NextResponse.json(data);
+}
 ```
-
-### Netlify
-
-Create a Netlify function for the proxy:
-
-```bash
-# netlify/functions/prometheus.ts
-# Similar to api/prometheus/[...path].ts
-```
-
-### Self-Hosted
-
-If deploying to your own server:
-
-1. **Option A: Nginx Proxy**
-   ```nginx
-   location /api/prometheus/ {
-       proxy_pass https://demo.promlabs.com/;
-       proxy_set_header Host demo.promlabs.com;
-   }
-   ```
-
-2. **Option B: Custom Prometheus**
-   Update `src/services/prometheusClient.ts` to point to your Prometheus server:
-   ```typescript
-   const PROMETHEUS_ENDPOINTS = {
-     development: '/prometheus',
-     production: 'https://your-prometheus.com',
-   };
-   ```
-
-   Enable CORS on your Prometheus server:
-   ```yaml
-   # prometheus.yml
-   web:
-     cors:
-       allowed-origins:
-         - "https://your-domain.com"
-   ```
 
 ## Project Structure
 
 ```
 promql-playground/
-├── api/                    # Vercel serverless functions
-│   └── prometheus/         # Prometheus proxy for CORS
-├── src/
-│   ├── components/         # React components
-│   │   ├── QueryInput.tsx          # Monaco editor
-│   │   ├── TimeRangePicker.tsx     # Time range selector
-│   │   ├── ScenarioManager.tsx     # Learning scenarios
-│   │   ├── QueryExplanation.tsx    # Query breakdown
-│   │   └── visualizations/         # Charts and tables
-│   ├── hooks/              # React Query hooks
-│   ├── providers/          # Context providers
-│   ├── scenarios/          # Learning scenario definitions
-│   ├── services/           # API clients
-│   │   └── prometheusClient.ts     # Prometheus API
-│   ├── styles/             # CSS styles
-│   └── types/              # TypeScript types
-├── vite.config.ts          # Vite configuration with dev proxy
-└── vercel.json             # Vercel deployment config
+├── .changeset/              # Changesets for versioning
+├── .github/                 # GitHub Actions workflows
+├── examples/
+│   └── nextjs-example/      # Next.js example app
+├── packages/
+│   └── react/               # @promql-playground/react SDK
+│       ├── src/
+│       │   ├── components/  # React components
+│       │   ├── hooks/       # React Query hooks
+│       │   ├── scenarios/   # Learning scenario definitions
+│       │   └── services/    # Prometheus API client
+│       └── dist/            # Built output
+├── package.json             # Root monorepo config
+└── pnpm-workspace.yaml      # pnpm workspace config
+```
+
+## Development
+
+```bash
+# Install dependencies
+pnpm install
+
+# Build SDK
+pnpm build
+
+# Run example
+cd examples/nextjs-example && pnpm dev
+
+# Create a changeset for versioning
+pnpm changeset
+
+# Version packages
+pnpm version
+
+# Publish to npm
+pnpm release
 ```
 
 ## Tech Stack
 
 - **React 18** - UI framework
 - **TypeScript** - Type safety
-- **Vite** - Build tool
-- **Monaco Editor** - Code editor
+- **tsup** - SDK bundling
+- **Monaco Editor** - Code editor with PromQL support
 - **uPlot** - High-performance charts
 - **React Query** - Data fetching and caching
-- **Lucide React** - Icons
-- **date-fns** - Date utilities
-
-## Available Metrics
-
-The demo server (demo.promlabs.com) provides these metrics:
-
-| Metric | Type | Description |
-|--------|------|-------------|
-| `demo_api_request_duration_seconds` | Histogram | HTTP request latency |
-| `demo_api_http_requests_in_progress` | Gauge | Current in-flight requests |
-| `demo_cpu_usage_seconds_total` | Counter | CPU time consumed |
-| `demo_memory_usage_bytes` | Gauge | Memory usage |
-| `demo_disk_usage_bytes` | Gauge | Disk space used |
-| `demo_disk_total_bytes` | Gauge | Total disk space |
-| `demo_items_shipped_total` | Counter | Business metric example |
-
-## Scripts
-
-```bash
-npm run dev      # Start development server
-npm run build    # Build for production
-npm run preview  # Preview production build
-npm run lint     # Run ESLint
-```
+- **pnpm** - Package manager
+- **Changesets** - Version management
 
 ## Contributing
 
