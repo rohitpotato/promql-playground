@@ -200,14 +200,16 @@ pnpm version
 pnpm release
 ```
 
-## Deployment
+## Deployment (Vercel)
 
-The project is configured for Vercel deployment. The `vercel.json` at the root handles:
-1. Building the SDK first (`pnpm build:sdk`)
-2. Building the Next.js app (`pnpm build:app`)
-3. Deploying from `examples/nextjs-example/.next`
+To deploy the example app on Vercel:
 
-Just connect the repo to Vercel and it will auto-deploy on push to `main`.
+1. Connect your repo to Vercel
+2. In Project Settings → General → **Root Directory**: set to `examples/nextjs-example`
+3. Vercel will auto-detect Next.js and use the custom `vercel.json` which:
+   - Installs dependencies from the monorepo root
+   - Builds the SDK first, then the Next.js app
+4. Deploy! Auto-deploys on push to `main`
 
 ## Tech Stack
 
