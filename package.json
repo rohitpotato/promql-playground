@@ -4,12 +4,16 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "pnpm --filter @promql-playground/react dev",
-    "build": "pnpm --filter @promql-playground/react build",
+    "dev": "pnpm --filter nextjs-example dev",
+    "dev:sdk": "pnpm --filter @promql-playground/react dev",
+    "build": "pnpm build:sdk && pnpm build:app",
+    "build:sdk": "pnpm --filter @promql-playground/react build",
+    "build:app": "pnpm --filter nextjs-example build",
+    "start": "pnpm --filter nextjs-example start",
     "lint": "pnpm -r lint",
     "changeset": "changeset",
     "version": "changeset version",
-    "release": "pnpm build && changeset publish"
+    "release": "pnpm build:sdk && changeset publish"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.1",

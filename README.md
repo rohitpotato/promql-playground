@@ -171,21 +171,43 @@ promql-playground/
 # Install dependencies
 pnpm install
 
-# Build SDK
+# Run the Next.js example (with hot reload)
+pnpm dev
+
+# Build everything (SDK + Next.js app)
 pnpm build
 
-# Run example
-cd examples/nextjs-example && pnpm dev
+# Build only the SDK
+pnpm build:sdk
 
+# Build only the Next.js app
+pnpm build:app
+
+# Start production server
+pnpm start
+```
+
+## Releasing
+
+```bash
 # Create a changeset for versioning
 pnpm changeset
 
 # Version packages
 pnpm version
 
-# Publish to npm
+# Publish SDK to npm
 pnpm release
 ```
+
+## Deployment
+
+The project is configured for Vercel deployment. The `vercel.json` at the root handles:
+1. Building the SDK first (`pnpm build:sdk`)
+2. Building the Next.js app (`pnpm build:app`)
+3. Deploying from `examples/nextjs-example/.next`
+
+Just connect the repo to Vercel and it will auto-deploy on push to `main`.
 
 ## Tech Stack
 
